@@ -29,21 +29,15 @@ jobs:
           tag_prefix: v
 
           custom_release_rules: >
-            [PATCH]:patch:Bug Fixes,
-            [Patch]:patch:Bug Fixes,
-            [patch]:patch:Bug Fixes,
-            [MINOR]:minor:Features,
-            [Minor]:minor:Features,
-            [minor]:minor:Features,
-            [MAJOR]:major:Breaking Changes,
-            [Major]:major:Breaking Changes,
-            [major]:major:Breaking Changes,
-            [NONE]:false,
-            [None]:false,
-            [none]:false,
-            [SKIP]:false,
-            [Skip]:false,
-            [skip]:false
+            [PATCH]:Bug Fixes,
+            [Patch]:Bug Fixes,
+            [patch]:Bug Fixes,
+            [MINOR]:Features,
+            [Minor]:Features,
+            [minor]:Features,
+            [MAJOR]:Breaking Changes,
+            [Major]:Breaking Changes,
+            [major]:Breaking Changes
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
