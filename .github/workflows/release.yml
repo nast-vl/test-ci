@@ -29,16 +29,9 @@ jobs:
           tag_prefix: v
           dry_run: true
 
-          custom_release_rules: >
-            PATCH:patch:Bug Fixes,
-            Patch:patch:Bug Fixes,
-            patch:patch:Bug Fixes,
-            MINOR:minor:Features,
-            Minor:minor:Features,
-            minor:minor:Features,
-            [MAJOR]:major:Breaking Changes,
-            [Major]:major:Breaking Changes,
-            [major]:major:Breaking Changes
+          custom_release_rules: 'fix:patch,feat:minor,breaking:major'
+
+
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
