@@ -28,6 +28,20 @@ jobs:
           default_bump: patch
           tag_prefix: v
 
+          custom_release_rules: >
+            [PATCH]:patch:Bug Fixes,
+            [Patch]:patch:Bug Fixes,
+            [patch]:patch:Bug Fixes,
+            [MINOR]:minor:Features,
+            [Minor]:minor:Features,
+            [minor]:minor:Features,
+            [MAJOR]:major:Breaking Changes,
+            [Major]:major:Breaking Changes,
+            [major]:major:Breaking Changes
+            [SKIP]:false,
+            [Skip]:false,
+            [skip]:false
+
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
