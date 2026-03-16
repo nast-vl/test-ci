@@ -1,0 +1,39 @@
+name: Automated Versioning and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Bump Version and Create Release
+    runs-on: ubuntu-latest
+    
+    # Required to allow the action to create tags and releases
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push Git tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: v
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          # Use the tag generated in the previous step
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          # Automatically use the generated changelog as the release description
+          body: ${{ steps.tag_version.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
