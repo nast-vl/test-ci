@@ -29,12 +29,12 @@ jobs:
           tag_prefix: v
 
           custom_release_rules: >
-            [PATCH]:patch:Bug Fixes,
-            [Patch]:patch:Bug Fixes,
-            [patch]:patch:Bug Fixes,
-            [MINOR]:minor:Features,
-            [Minor]:minor:Features,
-            [minor]:minor:Features,
+            PATCH:patch:Bug Fixes,
+            Patch:patch:Bug Fixes,
+            patch:patch:Bug Fixes,
+            MINOR:minor:Features,
+            Minor:minor:Features,
+            minor:minor:Features,
             [MAJOR]:major:Breaking Changes,
             [Major]:major:Breaking Changes,
             [major]:major:Breaking Changes
