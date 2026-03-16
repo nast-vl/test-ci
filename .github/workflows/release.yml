@@ -37,7 +37,10 @@ jobs:
             [minor]:minor:Features,
             [MAJOR]:major:Breaking Changes,
             [Major]:major:Breaking Changes,
-            [major]:major:Breaking Changes
+            [major]:major:Breaking Changes,
+            [NONE]:false,
+            [None]:false,
+            [none]:false,
             [SKIP]:false,
             [Skip]:false,
             [skip]:false
