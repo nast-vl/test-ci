@@ -1,4 +1,4 @@
 <?php
 
-echo "hello world"; // empty comment ---222333445
+echo "hello world"; // empty comment
 
