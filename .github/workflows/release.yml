@@ -1,4 +1,4 @@
-name: Automated Versioning and Release
+name: Release on merged PR
 
 on:
   push:
@@ -7,36 +7,91 @@ on:
 
 jobs:
   release:
-    name: Bump Version and Create Release
     runs-on: ubuntu-latest
-    
-    # Required to allow the action to create tags and releases
     permissions:
       contents: write
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Bump version and push Git tag
-        if: ${{ !contains(github.event.head_commit.message, '[SKIP-CI]') }}
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: false
-          tag_prefix: v
-          dry_run: true
+      - name: Determine bump from PR title
+        id: bump
+        shell: bash
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
 
-          custom_release_rules: 'PATCH:patch,MINOR:minor,MAJOR:major'
+          if [[ "$TITLE" =~ \[(SKIP|NONE)\] ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          elif [[ "$TITLE" =~ \[MAJOR\] ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ "$TITLE" =~ \[MINOR\] ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+          elif [[ "$TITLE" =~ \[PATCH\] ]]; then
+            echo "type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Create GitHub Release
-        if: ${{ !contains(github.event.head_commit.message, '[SKIP-CI]') && steps.tag_version.outputs.new_tag != '' }}
+      - name: Stop if skipped
+        if: steps.bump.outputs.skip == 'true'
+        run: echo "Skipping release"
+
+      - name: Get latest tag
+        if: steps.bump.outputs.skip != 'true'
+        id: latest
+        shell: bash
+        run: |
+          TAG=$(git tag --sort=-v:refname | head -n 1)
+          if [ -z "$TAG" ]; then
+            TAG="0.0.0"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Calculate next version
+        if: steps.bump.outputs.skip != 'true'
+        id: version
+        shell: bash
+        run: |
+          TAG="${{ steps.latest.outputs.tag }}"
+          TAG="${TAG#v}"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG"
+
+          case "${{ steps.bump.outputs.type }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        if: steps.bump.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.new_tag }}"
+          git push origin "${{ steps.version.outputs.new_tag }}"
+
+      - name: Create release
+        if: steps.bump.outputs.skip != 'true'
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+          tag: ${{ steps.version.outputs.new_tag }}
+          name: Release ${{ steps.version.outputs.new_tag }}
+          body: ${{ github.event.pull_request.title }}
           token: ${{ secrets.GITHUB_TOKEN }}
